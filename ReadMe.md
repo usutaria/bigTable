@@ -1,4 +1,4 @@
-From Google Support : 
+From Google Support : For increment method of readModifyWrite method in Google Bigtable.
 
 1.	Store the long value:
 •	Allocate a ByteBuffer with the size of a long (8 bytes).
