@@ -1,0 +1,36 @@
+import com.google.cloud.bigtable.data.v2.BigtableDataClient;
+import com.google.cloud.bigtable.data.v2.models.Mutation;
+import com.google.cloud.bigtable.data.v2.models.Row;
+import com.google.protobuf.ByteString;
+
+import java.nio.ByteBuffer;
+
+// ... (Bigtable connection setup)
+
+try (BigtableDataClient dataClient = BigtableDataClient.create(projectId, instanceId)) {
+    String tableId = "your-table-id";
+    String rowKey = "your-row-key";
+    String columnFamily = "your-column-family";
+    String columnQualifier = "long-value";
+
+    // 1. Storing a 64-bit Long Value
+    long longValueToStore = 123456789012345L; // Example value
+    ByteString encodedLong = ByteString.copyFrom(
+        ByteBuffer.allocate(Long.BYTES).putLong(longValueToStore).array()
+    );
+    
+    Mutation mutation = Mutation.create(tableId, rowKey)
+        .setCell(columnFamily, columnQualifier, encodedLong);
+    dataClient.mutateRow(mutation);
+
+    // 2. Reading the 64-bit Long Value
+    Row row = dataClient.readRow(tableId, rowKey);
+    if (row != null && row.getCells(columnFamily, columnQualifier).size() > 0) {
+        ByteString retrievedLongBytes = row.getCells(columnFamily, columnQualifier).get(0).getValue();
+        long retrievedLongValue = ByteBuffer.wrap(retrievedLongBytes.toByteArray()).getLong();
+
+        System.out.println("Retrieved long value: " + retrievedLongValue); 
+    } else {
+        System.out.println("Long value not found for row key: " + rowKey);
+    }
+}
